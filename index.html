@@ -64,8 +64,9 @@
         </label>
         <div class="modal-actions">
           <button type="button" data-close="incomeModal" class="btn ghost">Cancel</button>
-          <button type="submit" class="btn primary">Save</button>
+          <button id="incomeSaveButton" type="submit" class="btn primary">Save</button>
         </div>
+        <p id="incomeSubmitStatus" class="modal-submit-status" aria-live="polite"></p>
       </form>
     </dialog>
 
@@ -89,6 +90,7 @@
           <button type="button" data-close="itemModal" class="btn ghost">Cancel</button>
           <button type="submit" id="itemSaveButton" class="btn primary">Save</button>
         </div>
+        <p id="itemSubmitStatus" class="modal-submit-status" aria-live="polite"></p>
       </form>
     </dialog>
 

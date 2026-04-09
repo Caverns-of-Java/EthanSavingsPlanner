@@ -4,6 +4,8 @@ const state = {
   summary: null,
   chart: null,
   editingItemId: null,
+  incomeSubmitting: false,
+  itemSubmitting: false,
 };
 
 const ui = {
@@ -23,6 +25,8 @@ const ui = {
   incomeModal: document.getElementById("incomeModal"),
   incomeForm: document.getElementById("incomeForm"),
   incomeInput: document.getElementById("incomeInput"),
+  incomeSaveButton: document.getElementById("incomeSaveButton"),
+  incomeSubmitStatus: document.getElementById("incomeSubmitStatus"),
 
   itemModal: document.getElementById("itemModal"),
   itemForm: document.getElementById("itemForm"),
@@ -31,6 +35,8 @@ const ui = {
   itemNameInput: document.getElementById("itemNameInput"),
   itemAmountInput: document.getElementById("itemAmountInput"),
   itemNotesInput: document.getElementById("itemNotesInput"),
+  itemSaveButton: document.getElementById("itemSaveButton"),
+  itemSubmitStatus: document.getElementById("itemSubmitStatus"),
 };
 
 function formatCurrency(amount) {
@@ -152,6 +158,8 @@ function verifyRequiredElements() {
     "incomeModal",
     "incomeForm",
     "incomeInput",
+    "incomeSaveButton",
+    "incomeSubmitStatus",
     "itemModal",
     "itemForm",
     "itemModalTitle",
@@ -159,6 +167,8 @@ function verifyRequiredElements() {
     "itemNameInput",
     "itemAmountInput",
     "itemNotesInput",
+    "itemSaveButton",
+    "itemSubmitStatus",
     "itemsList",
     "itemsEmptyState",
     "netIncomeValue",
@@ -310,6 +320,7 @@ function resetItemForm() {
   ui.itemNameInput.value = "";
   ui.itemAmountInput.value = "";
   ui.itemNotesInput.value = "";
+  ui.itemSubmitStatus.textContent = "";
 }
 
 function startEditItem(item) {
@@ -344,6 +355,28 @@ function setBusy(form, busy) {
   controls.forEach((control) => {
     control.disabled = busy;
   });
+  form.classList.toggle("is-busy", busy);
+  form.setAttribute("aria-busy", busy ? "true" : "false");
+}
+
+function setIncomeSubmitState(isBusy, message) {
+  state.incomeSubmitting = isBusy;
+  setBusy(ui.incomeForm, isBusy);
+  ui.incomeSaveButton.classList.toggle("is-loading", isBusy);
+  ui.incomeSaveButton.textContent = isBusy ? "Saving..." : "Save";
+  ui.incomeSubmitStatus.textContent = message || "";
+}
+
+function setItemSubmitState(isBusy, message, actionLabel) {
+  state.itemSubmitting = isBusy;
+  setBusy(ui.itemForm, isBusy);
+  ui.itemSaveButton.classList.toggle("is-loading", isBusy);
+  if (isBusy) {
+    ui.itemSaveButton.textContent = actionLabel ? actionLabel + "..." : "Saving...";
+  } else {
+    ui.itemSaveButton.textContent = "Save";
+  }
+  ui.itemSubmitStatus.textContent = message || "";
 }
 
 function wireEvents() {
@@ -360,12 +393,18 @@ function wireEvents() {
 
   document.querySelectorAll("[data-close]").forEach((button) => {
     button.addEventListener("click", () => {
+      if (state.incomeSubmitting || state.itemSubmitting) {
+        return;
+      }
       const modalId = button.getAttribute("data-close");
       closeModal(document.getElementById(modalId));
     });
   });
 
   ui.overlay.addEventListener("click", () => {
+    if (state.incomeSubmitting || state.itemSubmitting) {
+      return;
+    }
     if (ui.incomeModal.open) {
       closeModal(ui.incomeModal);
     }
@@ -376,7 +415,10 @@ function wireEvents() {
 
   ui.incomeForm.addEventListener("submit", async (event) => {
     event.preventDefault();
-    setBusy(ui.incomeForm, true);
+    if (state.incomeSubmitting) {
+      return;
+    }
+    setIncomeSubmitState(true, "Saving net income...");
     setError("");
 
     try {
@@ -387,20 +429,25 @@ function wireEvents() {
     } catch (error) {
       setStatus("error", "Error");
       setError(error.message);
+      setIncomeSubmitState(true, "Could not save. Please try again.");
     } finally {
-      setBusy(ui.incomeForm, false);
+      setIncomeSubmitState(false, "");
     }
   });
 
   ui.itemForm.addEventListener("submit", async (event) => {
     event.preventDefault();
-    setBusy(ui.itemForm, true);
+    if (state.itemSubmitting) {
+      return;
+    }
     setError("");
 
     const id = ui.itemIdInput.value.trim();
     const item = ui.itemNameInput.value.trim();
     const amount = ui.itemAmountInput.value;
     const notes = ui.itemNotesInput.value.trim();
+    var actionLabel = id ? "Updating" : "Saving";
+    setItemSubmitState(true, actionLabel + " budget item...", actionLabel);
 
     try {
       setStatus("loading", id ? "Updating" : "Saving");
@@ -415,8 +462,9 @@ function wireEvents() {
     } catch (error) {
       setStatus("error", "Error");
       setError(error.message);
+      setItemSubmitState(true, "Could not save item. Please try again.", actionLabel);
     } finally {
-      setBusy(ui.itemForm, false);
+      setItemSubmitState(false, "", actionLabel);
     }
   });
 }
