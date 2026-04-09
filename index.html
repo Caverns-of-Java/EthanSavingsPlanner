@@ -1,0 +1,106 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Savings Planner</title>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <main class="container">
+      <header class="header card">
+        <div class="header-top">
+          <h1>Savings Planner</h1>
+          <span id="statusChip" class="status-chip loading" aria-live="polite">Loading</span>
+        </div>
+        <p class="subtitle">Plan where your income goes before your money disappears.</p>
+      </header>
+
+      <section class="summary-grid">
+        <article class="card metric">
+          <p class="label">Net Income</p>
+          <p id="netIncomeValue" class="value">$0.00</p>
+          <button id="openIncomeModalButton" class="btn ghost">Edit Net Income</button>
+        </article>
+        <article class="card metric">
+          <p class="label">Total Allocated</p>
+          <p id="totalAllocatedValue" class="value">$0.00</p>
+        </article>
+        <article class="card metric">
+          <p class="label">Remaining</p>
+          <p id="remainingValue" class="value">$0.00</p>
+        </article>
+      </section>
+
+      <section class="card chart-card">
+        <div class="section-header">
+          <h2>Allocation</h2>
+          <button id="openItemModalButton" class="btn primary">Add Budget Item</button>
+        </div>
+        <div class="chart-wrap">
+          <canvas id="allocationChart"></canvas>
+        </div>
+      </section>
+
+      <section class="card">
+        <div class="section-header">
+          <h2>Budget Items</h2>
+        </div>
+        <div id="itemsEmptyState" class="empty-state">No budget items yet. Add your first one.</div>
+        <div id="itemsList" class="items-list"></div>
+      </section>
+
+      <p id="globalError" class="error" aria-live="polite"></p>
+    </main>
+
+    <div id="overlay" class="overlay hidden"></div>
+
+    <dialog id="incomeModal" class="modal">
+      <form id="incomeForm" class="modal-form" method="dialog">
+        <h3>Edit Net Income</h3>
+        <label>
+          Net Income
+          <input id="incomeInput" type="number" min="0" step="0.01" required />
+        </label>
+        <div class="modal-actions">
+          <button type="button" data-close="incomeModal" class="btn ghost">Cancel</button>
+          <button type="submit" class="btn primary">Save</button>
+        </div>
+      </form>
+    </dialog>
+
+    <dialog id="itemModal" class="modal">
+      <form id="itemForm" class="modal-form" method="dialog">
+        <h3 id="itemModalTitle">Add Budget Item</h3>
+        <input id="itemIdInput" type="hidden" />
+        <label>
+          Item Name
+          <input id="itemNameInput" type="text" maxlength="80" required />
+        </label>
+        <label>
+          Amount
+          <input id="itemAmountInput" type="number" min="0" step="0.01" required />
+        </label>
+        <label>
+          Notes (optional)
+          <textarea id="itemNotesInput" maxlength="200"></textarea>
+        </label>
+        <div class="modal-actions">
+          <button type="button" data-close="itemModal" class="btn ghost">Cancel</button>
+          <button type="submit" id="itemSaveButton" class="btn primary">Save</button>
+        </div>
+      </form>
+    </dialog>
+
+    <script src="lib/chart.min.js"></script>
+    <script>
+      if (!window.Chart) {
+        var chartScript = document.createElement("script");
+        chartScript.src = "https://cdn.jsdelivr.net/npm/chart.js@4.4.3/dist/chart.umd.min.js";
+        chartScript.async = false;
+        document.head.appendChild(chartScript);
+      }
+    </script>
+    <script src="app.js" defer></script>
+  </body>
+</html>
