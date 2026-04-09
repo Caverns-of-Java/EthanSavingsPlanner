@@ -379,6 +379,16 @@ function setItemSubmitState(isBusy, message, actionLabel) {
   ui.itemSubmitStatus.textContent = message || "";
 }
 
+function registerServiceWorker() {
+  if (!("serviceWorker" in navigator)) {
+    return;
+  }
+
+  navigator.serviceWorker.register("./sw.js").catch((error) => {
+    console.error("Service worker registration failed:", error);
+  });
+}
+
 function wireEvents() {
   ui.openIncomeModalButton.addEventListener("click", () => {
     const currentIncome = Number((state.summary && state.summary.netIncome) || 0);
@@ -471,6 +481,7 @@ function wireEvents() {
 
 async function main() {
   try {
+    registerServiceWorker();
     setStatus("loading", "Loading");
     verifyRequiredElements();
     wireEvents();
